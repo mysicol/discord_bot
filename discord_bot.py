@@ -102,11 +102,4 @@ async def on_ready():
     while True:
         await bot.choose_action()
 
-    # channel = self.client.get_channel(CHANNEL_ID)
-    # if channel:
-    #     await channel.send("Hello from your Python Discord bot!")
-    # else:
-    #     print(f"Channel with ID {CHANNEL_ID} not found.")
-    # await self.client.close() # Close the bot after sending the message
-
 bot.start()
