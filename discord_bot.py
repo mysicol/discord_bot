@@ -44,6 +44,7 @@ class DiscordBot:
 
         self.intents = discord.Intents.default()
         self.intents.guilds = True
+        self.intents.message_content = True
         self.client = discord.Client(intents=self.intents)   
 
         # async functions
@@ -65,9 +66,46 @@ class DiscordBot:
             guild_dict[guild.name] = guild.id
 
         self.guild = self.client.get_guild(guild_dict[do_menu(list(guild_dict.keys()), "Choose a channel to target.")])
+        await self.choose_channel()
+
+    async def react(self):
+        msg = await self.target_message()
+        reaction = input("Enter your reaction: ")
+        await msg.add_reaction(reaction)
+        try:
+            await msg.add_reaction(reaction)
+        except discord.errors.HTTPException:
+            print("Invalid input.\n")
+
+    async def custom_react(self):
+        msg = await self.target_message()
+        reaction = "<:" + input("Sticker name: ") + ":" + input("Sticker ID: ") + ">"
+        try:
+            await msg.add_reaction(reaction)
+        except discord.errors.HTTPException:
+            print("Invalid input.\n")
+
+    async def target_message(self):
+        limit = 10
+        messages = {}
+        async for msg in self.channel.history(limit=limit):
+            messages[msg.author.display_name + ": " + msg.content] = msg
+        return messages[do_menu(list(messages.keys()), "Choose a message to target.")]
 
     async def send_message(self):
-        await self.channel.send(input("Enter a message: "))
+        msg = input("Enter a message: ")
+        if not msg:
+            print("Cancelling send.")
+            return
+        await self.channel.send(msg)
+
+    async def message_reply(self):
+        reply_to = await self.target_message()
+        content = input("Enter your reply: ")
+        if not content:
+            print("Cancelling send.")
+            return
+        await reply_to.reply(content)
 
     async def quit(self):
         self.online = False
@@ -77,6 +115,9 @@ class DiscordBot:
 
     async def choose_action(self):
         actions = {"Send message": self.send_message, 
+                   "Reply to a message": self.message_reply,
+                   "React to a message": self.react,
+                   "React with a sticker": self.custom_react,
                    "Change channel (" + str(self.channel.name) + ")": self.choose_channel, 
                    "Change server (" + str(self.guild.name) + ")": self.choose_guild, "Quit": self.quit}
 
@@ -97,7 +138,6 @@ async def on_ready():
     print("Bot is online.")
 
     await bot.choose_guild()
-    await bot.choose_channel()
 
     while True:
         await bot.choose_action()
