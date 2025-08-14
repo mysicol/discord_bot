@@ -1,5 +1,4 @@
 import discord
-import inputimeout
 
 def do_menu(lst, title="Make a choice."):
     print(title + "\n")
@@ -14,11 +13,7 @@ def do_menu(lst, title="Make a choice."):
     print()
 
     while True:
-        try:
-            user_choice = inputimeout.inputimeout("Enter choice item number: ", timeout=10)
-        except inputimeout.TimeoutOccurred:
-            print("Timeout, reprompting.")
-            return do_menu(lst, title=title)
+        user_choice = input("Enter choice item number: ")
 
         try:
             user_choice = int(user_choice)
@@ -72,10 +67,7 @@ class DiscordBot:
         self.guild = self.client.get_guild(guild_dict[do_menu(list(guild_dict.keys()), "Choose a channel to target.")])
 
     async def send_message(self):
-        try:
-            await self.channel.send(inputimeout.inputimeout("Enter a message: ", timeout=10))
-        except inputimeout.TimeoutOccurred:
-            print("Timeout, reprompting.")
+        await self.channel.send(input("Enter a message: "))
 
     async def quit(self):
         self.online = False
